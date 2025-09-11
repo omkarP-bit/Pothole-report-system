@@ -1,8 +1,6 @@
--- Create database
 CREATE DATABASE IF NOT EXISTS pothole_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE pothole_db;
 
--- Create CustomUser table
 CREATE TABLE custom_user (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL UNIQUE,
@@ -18,13 +16,12 @@ CREATE TABLE custom_user (
     INDEX idx_email (email)
 );
 
--- Create PotholeReport table
 CREATE TABLE pothole_report (
     id INT AUTO_INCREMENT PRIMARY KEY,
     report_id VARCHAR(36) NOT NULL UNIQUE,
     user_id VARCHAR(36) NOT NULL,
     image_url VARCHAR(500),
-    s3_bucket_path VARCHAR(300), -- S3 bucket path/key for internal reference
+    s3_bucket_path VARCHAR(300),
     description TEXT,
     location_name VARCHAR(200),
     latitude DECIMAL(10, 8),
@@ -43,7 +40,6 @@ CREATE TABLE pothole_report (
     INDEX idx_location (latitude, longitude)
 );
 
--- Create MunicipalVerification table
 CREATE TABLE municipal_verification (
     id INT AUTO_INCREMENT PRIMARY KEY,
     report_id VARCHAR(36) NOT NULL,
@@ -57,15 +53,12 @@ CREATE TABLE municipal_verification (
     INDEX idx_verification_date (verification_date)
 );
 
--- Insert sample municipal staff user
 INSERT INTO custom_user (user_id, username, email, password_hash, is_staff, credits) VALUES
 (UUID(), 'municipal_admin', 'admin@municipal.gov', 'pbkdf2:sha256:260000$salt$hash', TRUE, 0);
 
--- Insert sample regular user
 INSERT INTO custom_user (user_id, username, email, password_hash, is_staff, credits) VALUES
 (UUID(), 'john_doe', 'john@example.com', 'pbkdf2:sha256:260000$salt$hash', FALSE, 15);
 
--- Sample pothole reports for testing
 INSERT INTO pothole_report (
     report_id, user_id, image_url, s3_bucket_path, description, 
     location_name, latitude, longitude, severity, status
@@ -95,7 +88,6 @@ INSERT INTO pothole_report (
     'VERIFIED'
 );
 
--- Create views for reporting and analytics
 CREATE VIEW report_summary AS
 SELECT 
     u.username,
@@ -120,7 +112,6 @@ FROM pothole_report
 GROUP BY status, severity, DATE(created_at)
 ORDER BY report_date DESC;
 
--- Stored procedure for awarding credits
 DELIMITER //
 CREATE PROCEDURE AwardCredits(
     IN p_user_id VARCHAR(36),
@@ -134,7 +125,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- Trigger to update user credits when report status changes
 DELIMITER //
 CREATE TRIGGER update_credits_on_status_change
 AFTER UPDATE ON pothole_report

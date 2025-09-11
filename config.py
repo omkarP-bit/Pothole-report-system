@@ -8,12 +8,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # AWS Configuration
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
     AWS_REGION = os.getenv('AWS_REGION')
     
-    # Upload Configuration
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     UPLOAD_FOLDER = 'uploads'

@@ -1,4 +1,3 @@
-/* static/css/style.css */
 :root {
     --primary-color: #007bff;
     --secondary-color: #6c757d;
@@ -63,14 +62,12 @@ body {
     height: 1rem;
 }
 
-/* Custom Alert Styles */
 .alert {
     border: 0;
     border-radius: 0.5rem;
     font-weight: 500;
 }
 
-/* Dashboard Cards */
 .dashboard-card {
     background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -81,13 +78,11 @@ body {
     padding: 1.5rem;
 }
 
-/* Image Preview */
 #image-preview img {
     border: 2px solid #e9ecef;
     border-radius: 0.5rem;
 }
 
-/* Modal Customization */
 .modal-content {
     border-radius: 1rem;
     border: 0;
@@ -99,12 +94,10 @@ body {
     border-radius: 1rem 1rem 0 0;
 }
 
-/* Footer */
 footer {
     margin-top: auto;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .hero-section {
         padding: 2rem 1rem !important;
@@ -119,26 +112,22 @@ footer {
     }
 }
 
-/* Loading States */
 .loading {
     opacity: 0.6;
     pointer-events: none;
 }
 
-/* Status Color Classes */
 .status-pending { color: var(--warning-color); }
 .status-verified { color: var(--info-color); }
 .status-in-progress { color: var(--primary-color); }
 .status-completed { color: var(--success-color); }
 .status-rejected { color: var(--danger-color); }
 
-/* Severity Color Classes */
 .severity-low { color: var(--success-color); }
 .severity-medium { color: var(--warning-color); }
 .severity-high { color: var(--danger-color); }
 .severity-critical { color: var(--dark-color); }
 
-/* Animation */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -148,7 +137,6 @@ footer {
     animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }

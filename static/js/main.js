@@ -1,39 +1,22 @@
-// static/js/main.js
-
-// Global utility functions
 function showAlert(message, type = 'info') {
     const alertContainer = document.getElementById('alert-container');
-    const alertId = 'alert-' + Date.now();
+    if (!alertContainer) return;
     
-    const alertHtml = `
-        <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
-            <i class="fas fa-${getAlertIcon(type)}"></i> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     
-    alertContainer.insertAdjacentHTML('beforeend', alertHtml);
+    alertContainer.appendChild(alertDiv);
     
-    // Auto-dismiss after 5 seconds
     setTimeout(() => {
-        const alertElement = document.getElementById(alertId);
-        if (alertElement) {
-            const bsAlert = new bootstrap.Alert(alertElement);
+        if (alertDiv && alertDiv.parentNode) {
+            const bsAlert = new bootstrap.Alert(alertDiv);
             bsAlert.close();
         }
     }, 5000);
-}
-
-function getAlertIcon(type) {
-    const icons = {
-        'success': 'check-circle',
-        'danger': 'exclamation-triangle',
-        'warning': 'exclamation-triangle',
-        'info': 'info-circle',
-        'primary': 'info-circle',
-        'secondary': 'info-circle'
-    };
-    return icons[type] || 'info-circle';
 }
 
 function getSeverityColor(severity) {
@@ -57,16 +40,26 @@ function getStatusColor(status) {
     return colors[status] || 'secondary';
 }
 
-// Format date for display
 function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
-// Validate file upload
 function validateImageFile(file) {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = [
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/gif',
+        'image/webp'
+    ];
+    const maxSize = 5 * 1024 * 1024;
     
     if (!allowedTypes.includes(file.type)) {
         showAlert('Please select a valid image file (JPEG, PNG, GIF, or WebP)', 'danger');
@@ -81,7 +74,6 @@ function validateImageFile(file) {
     return true;
 }
 
-// Loading state management
 function setLoadingState(element, loading = true) {
     if (loading) {
         element.classList.add('loading');
@@ -92,7 +84,6 @@ function setLoadingState(element, loading = true) {
     }
 }
 
-// Form validation utilities
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -111,7 +102,6 @@ function validateCoordinates(lat, lng) {
            (!isNaN(longitude) && longitude >= -180 && longitude <= 180);
 }
 
-// Local storage utilities (fallback for session data)
 function saveToSession(key, data) {
     try {
         sessionStorage.setItem(key, JSON.stringify(data));
@@ -138,7 +128,6 @@ function clearSession() {
     }
 }
 
-// Image compression utility
 async function compressImage(file, maxWidth = 1200, quality = 0.8) {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
@@ -146,7 +135,6 @@ async function compressImage(file, maxWidth = 1200, quality = 0.8) {
         const img = new Image();
         
         img.onload = () => {
-            // Calculate new dimensions
             let { width, height } = img;
             if (width > maxWidth) {
                 height = (height * maxWidth) / width;
@@ -156,7 +144,6 @@ async function compressImage(file, maxWidth = 1200, quality = 0.8) {
             canvas.width = width;
             canvas.height = height;
             
-            // Draw and compress
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob(resolve, 'image/jpeg', quality);
         };
@@ -165,7 +152,6 @@ async function compressImage(file, maxWidth = 1200, quality = 0.8) {
     });
 }
 
-// Network request utility with retry
 async function makeRequest(url, options = {}, retries = 3) {
     for (let i = 0; i < retries; i++) {
         try {
@@ -185,24 +171,19 @@ async function makeRequest(url, options = {}, retries = 3) {
         } catch (error) {
             if (i === retries - 1) throw error;
             
-            // Wait before retry
             await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         }
     }
 }
 
-// Initialize tooltips and popovers
 function initializeBootstrapComponents() {
-    // Initialize tooltips
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     
-    // Initialize popovers
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 }
 
-// Debounce utility for search/input
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -215,13 +196,11 @@ function debounce(func, wait) {
     };
 }
 
-// Copy to clipboard utility
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
         showAlert('Copied to clipboard!', 'success');
     } catch (err) {
-        // Fallback for older browsers
         const textArea = document.createElement('textarea');
         textArea.value = text;
         textArea.style.position = 'fixed';
@@ -242,7 +221,6 @@ async function copyToClipboard(text) {
     }
 }
 
-// Initialize geolocation utilities
 const geolocation = {
     getCurrentPosition: () => {
         return new Promise((resolve, reject) => {
@@ -275,19 +253,16 @@ const geolocation = {
                 {
                     enableHighAccuracy: true,
                     timeout: 10000,
-                    maximumAge: 300000 // 5 minutes
+                    maximumAge: 300000
                 }
             );
         });
     }
 };
 
-// Initialize page-specific functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap components
     initializeBootstrapComponents();
     
-    // Add smooth scrolling to anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -301,7 +276,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add loading animation to forms
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function() {
             const submitBtn = form.querySelector('button[type="submit"]');
@@ -311,7 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Auto-hide alerts after 5 seconds
     document.querySelectorAll('.alert').forEach(alert => {
         setTimeout(() => {
             if (alert && alert.parentNode) {
@@ -321,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
     
-    // Add animation classes to cards
     document.querySelectorAll('.card').forEach((card, index) => {
         setTimeout(() => {
             card.classList.add('fade-in');
@@ -329,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Handle network errors
 window.addEventListener('online', function() {
     showAlert('Connection restored', 'success');
 });
@@ -338,13 +309,11 @@ window.addEventListener('offline', function() {
     showAlert('Connection lost. Some features may not work.', 'warning');
 });
 
-// Error handling for unhandled promises
 window.addEventListener('unhandledrejection', function(event) {
     console.error('Unhandled promise rejection:', event.reason);
     showAlert('An unexpected error occurred. Please try again.', 'danger');
 });
 
-// Export utilities for use in other scripts
 window.PotholeApp = {
     showAlert,
     getSeverityColor,
