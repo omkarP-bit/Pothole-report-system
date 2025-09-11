@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 rounded mb-4">
+    <div class="text-center">
+        <h1 class="display-4">Report Potholes, Improve Roads</h1>
+        <p class="lead">Help your community by reporting road hazards and earning credits</p>
+        {% if not session.user_id %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-2">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+        {% else %}
+            <a href="{{ url_for('report_pothole') }}" class="btn btn-light btn-lg">Report a Pothole</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-camera fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Report Issues</h5>
+                <p class="card-text">Take photos of potholes and submit reports with location details</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Get Verified</h5>
+                <p class="card-text">Municipal authorities verify and prioritize reported issues</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-coins fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Earn Credits</h5>
+                <p class="card-text">Earn credits for reporting and get bonuses when issues are fixed</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5">
+    <h2>Recent Verified Reports</h2>
+    <div id="public-reports-container">
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load public reports on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadPublicReports();
+});
+
+async function loadPublicReports() {
+    try {
+        const response = await fetch('/api/public-reports');
+        const reports = await response.json();
+        
+        const container = document.getElementById('public-reports-container');
+        
+        if (reports.length === 0) {
+            container.innerHTML = '<p class="text-muted">No verified reports yet.</p>';
+            return;
+        }
+        
+        let html = '<div class="row">';
+        reports.slice(0, 6).forEach(report => {
+            html += `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">${report.location_name}</h6>
+                            <p class="card-text small">${report.description}</p>
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-${getSeverityColor(report.severity)}">${report.severity}</span>
+                                <span class="badge bg-${getStatusColor(report.status)}">${report.status}</span>
+                            </div>
+                            <small class="text-muted">${report.created_at}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading public reports:', error);
+        document.getElementById('public-reports-container').innerHTML = 
+            '<p class="text-danger">Error loading reports.</p>';
+    }
+}
+
+function getSeverityColor(severity) {
+    const colors = {
+        'LOW': 'success',
+        'MEDIUM': 'warning',
+        'HIGH': 'danger',
+        'CRITICAL': 'dark'
+    };
+    return colors[severity] || 'secondary';
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'PENDING': 'warning',
+        'VERIFIED': 'info',
+        'IN_PROGRESS': 'primary',
+        'COMPLETED': 'success',
+        'REJECTED': 'danger'
+    };
+    return colors[status] || 'secondary';
+}
+</script>
+{% endblock %}
