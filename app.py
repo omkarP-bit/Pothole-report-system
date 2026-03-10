@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import boto3
@@ -13,13 +14,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import pymysql
-pymysql.install_as_MySQLdb()
+from advanced_ml import AdvancedAccidentPredictor
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend integration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SUPABASE_DB_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize ML model
+advanced_predictor = AdvancedAccidentPredictor()
 
 # AWS S3 Configuration
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -462,6 +466,71 @@ def all_reports():
         })
 
     return jsonify(reports_data)
+
+@app.route('/api/risk-analysis/<report_id>')
+@staff_required
+def risk_analysis(report_id):
+    report = PotholeReport.query.filter_by(report_id=report_id).first()
+    if not report:
+        return jsonify({'error': 'Report not found'}), 404
+    
+    all_reports = PotholeReport.query.all()
+    report_data = {
+        'report_id': report.report_id,
+        'latitude': float(report.latitude),
+        'longitude': float(report.longitude),
+        'severity': report.severity,
+        'created_at': report.created_at.strftime('%Y-%m-%d %H:%M')
+    }
+    
+    all_reports_data = [{
+        'report_id': r.report_id,
+        'latitude': float(r.latitude),
+        'longitude': float(r.longitude),
+        'severity': r.severity,
+        'created_at': r.created_at.strftime('%Y-%m-%d %H:%M')
+    } for r in all_reports if r.latitude and r.longitude]
+    
+    risk_analysis = advanced_predictor.predict_comprehensive_risk(report_data, all_reports_data)
+    return jsonify(risk_analysis)
+
+@app.route('/api/area-risk-analysis')
+@staff_required
+def area_risk_analysis():
+    reports = PotholeReport.query.filter(PotholeReport.status.in_(['PENDING', 'VERIFIED', 'IN_PROGRESS'])).all()
+    
+    risk_data = []
+    all_reports_data = [{
+        'report_id': r.report_id,
+        'latitude': float(r.latitude),
+        'longitude': float(r.longitude),
+        'severity': r.severity,
+        'created_at': r.created_at.strftime('%Y-%m-%d %H:%M')
+    } for r in reports if r.latitude and r.longitude]
+    
+    for report in reports:
+        if report.latitude and report.longitude:
+            report_data = {
+                'report_id': report.report_id,
+                'latitude': float(report.latitude),
+                'longitude': float(report.longitude),
+                'severity': report.severity,
+                'created_at': report.created_at.strftime('%Y-%m-%d %H:%M'),
+                'location_name': report.location_name
+            }
+            
+            risk = advanced_predictor.predict_comprehensive_risk(report_data, all_reports_data)
+            risk_data.append({
+                'report_id': report.report_id,
+                'location_name': report.location_name,
+                'latitude': report.latitude,
+                'longitude': report.longitude,
+                'risk_level': risk['risk_level'],
+                'accident_probability': risk['accident_probability'],
+                'recommendations': risk['recommendations']
+            })
+    
+    return jsonify(risk_data)
 
 @app.route('/create-staff-user', methods=['POST'])
 def create_staff_user():

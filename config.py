@@ -5,7 +5,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    SQLALCHEMY_DATABASE_URI = os.getenv('SUPABASE_DB_URL')  # postgresql://user:pass@host:port/dbname
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
