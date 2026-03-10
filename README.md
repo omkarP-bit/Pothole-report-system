@@ -137,7 +137,7 @@ docker run -p 5000:5000 pothole-system
 ```
 ├── app.py                    # Main Flask application
 ├── advanced_ml.py           # Machine learning prediction engine
-├── hackathon_api.py         # Advanced API endpoints
+├── advanced_api.py           # Advanced API endpoints
 ├── ml_model.py              # Core ML model implementation
 ├── config.py                # Application configuration
 ├── requirements.txt         # Python dependencies

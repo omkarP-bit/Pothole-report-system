@@ -16,11 +16,16 @@ load_dotenv()
 
 from advanced_ml import AdvancedAccidentPredictor
 
+from advanced_api import advanced_api
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SUPABASE_DB_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Register advanced API blueprint
+app.register_blueprint(advanced_api)
 
 # Initialize ML model
 advanced_predictor = AdvancedAccidentPredictor()
